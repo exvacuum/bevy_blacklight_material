@@ -1,0 +1,8 @@
+[package]
+name = "bevy_blacklight_material"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies.bevy]
+version = "0.14"
+features = ["bevy_render", "bevy_asset"]
