@@ -3,9 +3,9 @@
 struct BlackLight {
 	position: vec3<f32>,
 	direction: vec3<f32>,
-	color: vec4<f32>,
 	range: f32,
-	radius: f32,
+	inner_angle: f32,
+	outer_angle: f32,
 }
 
 @group(2) @binding(0) var<storage> lights: array<BlackLight>;
@@ -21,8 +21,9 @@ fn fragment(
 	for (var i = u32(0); i < arrayLength(&lights); i = i+1) {
 		let light = lights[i];
 		let light_distance_squared = distance_squared(in.world_position.xyz, light.position);
-		let light_arccosine = abs(acos(dot(normalize(light.direction), normalize(in.world_position.xyz - light.position)))) * radians(180.0);
-		final_color = saturate(final_color + base_color * (inverse_falloff_radius(light_distance_squared / (light.range * light.range), 0.5) * inverse_falloff_radius(light_arccosine, 0.9)));
+		let light_arccosine = abs(acos(dot(normalize(light.direction), normalize(in.world_position.xyz - light.position))));
+		let angle_inner_factor = light.inner_angle/light.outer_angle;
+		final_color = saturate(final_color + base_color * (inverse_falloff_radius(light_distance_squared / (light.range * light.range), 0.5) * inverse_falloff_radius(light_arccosine / light.outer_angle, angle_inner_factor)));
 	}
 	return final_color;
 }

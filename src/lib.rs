@@ -20,9 +20,9 @@ pub struct Blacklight;
 pub struct BlacklightData {
     pub position: Vec3,
     pub direction: Vec3,
-    pub color: Vec4,
     pub range: f32,
-    pub radius: f32,
+    pub inner_angle: f32,
+    pub outer_angle: f32,
 }
 
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
@@ -56,19 +56,19 @@ impl Material for BlacklightMaterial {
 }
 
 fn update_shader_blacklight_data(
-    blacklight_query: Query<(&ViewVisibility, &GlobalTransform, &Transform, &SpotLight), With<Blacklight>>,
+    blacklight_query: Query<(&ViewVisibility, &GlobalTransform, &SpotLight), With<Blacklight>>,
     blacklight_material_query: Query<&Handle<BlacklightMaterial>>,
     mut blacklight_materials: ResMut<Assets<BlacklightMaterial>>,
 ) {
     let light_data = blacklight_query
         .iter()
-        .filter(|(visibility, _, _, _)| visibility.get())
-        .map(|(_, global_transform, transform, light)| BlacklightData {
+        .filter(|(visibility, _, _)| visibility.get())
+        .map(|(_, global_transform, light)| BlacklightData {
             position: global_transform.translation(),
             direction: *global_transform.forward(),
-            color: light.color.to_srgba().to_vec4(),
             range: light.range,
-            radius: light.radius,
+            inner_angle: light.inner_angle,
+            outer_angle: light.outer_angle,
         })
         .collect::<Vec<_>>();
     for handle in blacklight_material_query.iter() {
