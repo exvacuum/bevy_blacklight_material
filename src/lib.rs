@@ -1,37 +1,60 @@
+#![warn(missing_docs)]
+
+//! A plugin for the bevy engine providing a simple [`BlacklightMaterial`], which reveals a base
+//! color based on light data from spot lights tagged with a [`Blacklight`] component.
+//! 
+//! Possible future features:
+//! - [`StandardMaterial`] extension for a "blacklight mapped" material.
+//! - Point light support.
+
 use bevy::{
     asset::embedded_asset,
     prelude::*,
     render::render_resource::{AsBindGroup, ShaderType},
 };
 
+/// Plugin which enables and updates blacklight shaders.
 pub struct BlacklightPlugin;
 
 impl Plugin for BlacklightPlugin {
     fn build(&self, app: &mut App) {
         embedded_asset!(app, "../assets/shaders/blacklight_material.wgsl");
-        app.add_plugins(MaterialPlugin::<BlacklightMaterial>::default()).add_systems(Update, update_shader_blacklight_data);
+        app.add_plugins(MaterialPlugin::<BlacklightMaterial>::default())
+            .add_systems(Update, update_shader_blacklight_data);
     }
 }
 
+/// Marker component for spot lights to use them as blacklights for [`BlacklightMaterial`].
 #[derive(Component, Debug)]
 pub struct Blacklight;
 
+/// Shader data representing a single blacklight point light.
 #[derive(Clone, Debug, ShaderType)]
 pub struct BlacklightData {
+    /// World-space position of this light.
     pub position: Vec3,
+    /// World-space direction of this light (must be normalized).
     pub direction: Vec3,
+    /// Range of this light (see [`SpotLight`]).
     pub range: f32,
+    /// Inner angle of this light (see [`SpotLight`]).
     pub inner_angle: f32,
+    /// Outer angle of this light (see [`SpotLight`]).
     pub outer_angle: f32,
 }
 
+/// Material which is invisible until exposed to light from a spot light tagged with the
+/// [`Blacklight`] component.
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 pub struct BlacklightMaterial {
+    /// List of light data processed by this shader
     #[storage(0, read_only)]
     pub lights: Vec<BlacklightData>,
+    /// Base color texture which is revealed by blacklight exposure.
     #[texture(1)]
     #[sampler(2)]
     pub base_texture: Option<Handle<Image>>,
+    /// Alpha mode for this material.
     pub alpha_mode: AlphaMode,
 }
 
