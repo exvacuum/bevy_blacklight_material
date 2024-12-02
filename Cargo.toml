@@ -2,6 +2,8 @@
 name = "bevy_blacklight_material"
 version = "0.1.0"
 edition = "2021"
+license = "0BSD OR Apache-2.0 OR MIT"
+repository = "https://github.com/exvacuum/bevy_blacklight_material"
 
 [dependencies.bevy]
 version = "0.14"
