@@ -11,12 +11,13 @@ struct BlackLight {
 @group(2) @binding(0) var<storage> lights: array<BlackLight>;
 @group(2) @binding(1) var base_texture: texture_2d<f32>;
 @group(2) @binding(2) var base_sampler: sampler;
+@group(2) @binding(3) var<uniform> base_color: vec4<f32>;
 
 @fragment
 fn fragment(
 	in: VertexOutput,
 ) -> @location(0) vec4<f32> {
-	let base_color = textureSample(base_texture, base_sampler, in.uv);
+	let base_texture_color = textureSample(base_texture, base_sampler, in.uv);
 	var final_color = vec4f(0.0, 0.0, 0.0, 0.0);
 	for (var i = u32(0); i < arrayLength(&lights); i = i+1) {
 		let light = lights[i];
@@ -26,12 +27,14 @@ fn fragment(
 		let angle_inner_factor = light.inner_angle / light.outer_angle;
 		let angle_factor = linear_falloff_radius(light_to_fragment_angle / light.outer_angle, angle_inner_factor);
 
+		let normal_factor = linear_falloff_radius(1.0 - saturate(dot(in.world_normal, -light.direction)), 0.5);
+
 		let light_distance_squared = distance_squared(in.world_position.xyz, light.position);
 		let distance_factor = inverse_falloff_radius(saturate(light_distance_squared / (light.range * light.range)), 0.5);
 
-		final_color = saturate(final_color + base_color * angle_factor * distance_factor);
+		final_color = saturate(final_color + base_texture_color * angle_factor * distance_factor * normal_factor);
 	}
-	return final_color;
+	return base_color * final_color;
 }
 
 fn distance_squared(a: vec3f, b: vec3f) -> f32 {

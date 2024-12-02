@@ -54,6 +54,9 @@ pub struct BlacklightMaterial {
     #[texture(1)]
     #[sampler(2)]
     pub base_texture: Option<Handle<Image>>,
+    /// Base color of material, multiplies with texture.
+    #[uniform(3)]
+    pub base_color: LinearRgba,
     /// Alpha mode for this material.
     pub alpha_mode: AlphaMode,
 }
@@ -63,6 +66,7 @@ impl Default for BlacklightMaterial {
         Self {
             lights: vec![],
             base_texture: None,
+            base_color: LinearRgba::WHITE,
             alpha_mode: AlphaMode::Blend,
         }
     }
