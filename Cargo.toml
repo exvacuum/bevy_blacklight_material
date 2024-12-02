@@ -1,5 +1,6 @@
 [package]
 name = "bevy_blacklight_material"
+description = "A blacklight material plugin for the Bevy engine"
 version = "0.1.0"
 edition = "2021"
 license = "0BSD OR Apache-2.0 OR MIT"
