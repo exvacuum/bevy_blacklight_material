@@ -1,11 +1,11 @@
 [package]
 name = "bevy_blacklight_material"
 description = "A blacklight material plugin for the Bevy engine"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "0BSD OR Apache-2.0 OR MIT"
-repository = "https://github.com/exvacuum/bevy_blacklight_material"
+repository = "https://git.exvacuum.dev/bevy_blacklight_material"
 
 [dependencies.bevy]
-version = "0.14"
+version = "0.15"
 features = ["bevy_render", "bevy_asset"]

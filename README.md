@@ -14,19 +14,20 @@ Feel free to contribute if you want to improve this, it was thrown together pret
 | Crate Version | Bevy Version |
 |---            |---           |
 | 0.1           | 0.14         |
+| 0.2           | 0.15         |
 
 ## Installation
 
 ### crates.io
 ```toml
 [dependencies]
-bevy_blacklight_material = "0.1"
+bevy_blacklight_material = "0.2"
 ```
 
 ### Using git URL in Cargo.toml
 ```toml
 [dependencies.bevy_rustysynth]
-git = "https://github.com/exvacuum/bevy_blacklight_material.git"
+git = "https://git.exvacuum.dev/bevy_blacklight_material"
 ```
 
 ## Usage
@@ -47,26 +48,15 @@ fn main() {
 Then you can create blacklight-emitting spotlights, and reveal-able surfaces, like this:
 ```rs
 // Mesh with blacklight material
-commands.spawn(MaterialMeshBundle {
-    material: asset_server.add(BlacklightMaterial {
-        // base texture, color, etc
-        ..Default::default()
-    }),
-    ..Default::default()
-});
+commands.spawn((
+    //...
+    MeshMaterial3d(asset_server.add(BlacklightMaterial::new(&asset_server, None, Color::WHITE))),
+));
 
 
 // Blacklight
-commands.spawn((
-    Blacklight, // Marker component
-    SpotLightBundle {
-        spot_light: SpotLight {
-            // outer/inner angle, range
-            ..Default::default()
-        },
-        ..Default::default()     
-    },
-));
+// Requires `SpotLight`, but you might want to add one yourself
+commands.spawn(Blacklight);
 ```
 
 ## License

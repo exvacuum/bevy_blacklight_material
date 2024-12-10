@@ -10,7 +10,7 @@
 use bevy::{
     asset::embedded_asset,
     prelude::*,
-    render::render_resource::{AsBindGroup, ShaderType},
+    render::{render_resource::{AsBindGroup, ShaderType}, storage::ShaderStorageBuffer},
 };
 
 /// Plugin which enables and updates blacklight shaders.
@@ -26,6 +26,7 @@ impl Plugin for BlacklightPlugin {
 
 /// Marker component for spot lights to use them as blacklights for [`BlacklightMaterial`].
 #[derive(Component, Debug)]
+#[require(SpotLight)]
 pub struct Blacklight;
 
 /// Shader data representing a single blacklight point light.
@@ -49,7 +50,7 @@ pub struct BlacklightData {
 pub struct BlacklightMaterial {
     /// List of light data processed by this shader
     #[storage(0, read_only)]
-    pub lights: Vec<BlacklightData>,
+    pub lights: Handle<ShaderStorageBuffer>,
     /// Base color texture which is revealed by blacklight exposure.
     #[texture(1)]
     #[sampler(2)]
@@ -61,12 +62,13 @@ pub struct BlacklightMaterial {
     pub alpha_mode: AlphaMode,
 }
 
-impl Default for BlacklightMaterial {
-    fn default() -> Self {
+impl BlacklightMaterial {
+    /// Construct a new instance of this material
+    pub fn new(asset_server: &AssetServer, base_texture: Option<Handle<Image>>, base_color: impl Into<LinearRgba>) -> Self {
         Self {
-            lights: vec![],
-            base_texture: None,
-            base_color: LinearRgba::WHITE,
+            lights: asset_server.add(ShaderStorageBuffer::default()),
+            base_texture,
+            base_color: base_color.into(),
             alpha_mode: AlphaMode::Blend,
         }
     }
@@ -84,8 +86,9 @@ impl Material for BlacklightMaterial {
 
 fn update_shader_blacklight_data(
     blacklight_query: Query<(&ViewVisibility, &GlobalTransform, &SpotLight), With<Blacklight>>,
-    blacklight_material_query: Query<&Handle<BlacklightMaterial>>,
+    blacklight_material_query: Query<&MeshMaterial3d<BlacklightMaterial>>,
     mut blacklight_materials: ResMut<Assets<BlacklightMaterial>>,
+    mut blacklight_storage_buffers: ResMut<Assets<ShaderStorageBuffer>>,
 ) {
     let light_data = blacklight_query
         .iter()
@@ -98,8 +101,9 @@ fn update_shader_blacklight_data(
             outer_angle: light.outer_angle,
         })
         .collect::<Vec<_>>();
-    for handle in blacklight_material_query.iter() {
-        let material = blacklight_materials.get_mut(handle).unwrap();
-        material.lights = light_data.clone();
+    for blacklight_material in blacklight_material_query.iter() {
+        let material = blacklight_materials.get_mut(&blacklight_material.0).unwrap();
+        let storage_buffer = blacklight_storage_buffers.get_mut(&material.lights).unwrap();
+        storage_buffer.set_data(light_data.clone());
     }
 }
